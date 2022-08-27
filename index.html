@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ReactJS - Javascript Calculator</title>
+        <meta name="description" content="ReactJS-Javascript Calculator">
+        <meta name="author" content="Mseong">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="stylesheet/style.css">
+    </head>
+    <body>
+        <p class="title1">JavaScript Calculator</p>
+        <p class="title2">by Mseong</p>
+        <div id="ms">
+        </div>
+        <script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone@6/babel.min.js" crossorigin></script>
+        <script type="text/babel">
+
+            function createCalculatorButton (string,name,handleClick) {
+            return (
+                <button id={name} className={"button "+name} onClick={handleClick}>{string}</button>
+            )
+            }
+
+            function Display (props) {
+            return (
+                <div id="display" className="display">
+                <div className="display1">{props.totalView}</div> 
+                <div className="display2">{props.currentView}</div> 
+                </div>
+            )
+            }
+
+            class CalculatorApp extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state={
+                currentView:"0",
+                totalView:''
+                }
+                this.handleClickNumber=this.handleClickNumber.bind(this);
+                this.handleClickNumberZero=this.handleClickNumberZero.bind(this);
+                this.handleClickDecimal=this.handleClickDecimal.bind(this);
+                this.handleClickEqual=this.handleClickEqual.bind(this);
+                this.handleClickOperator=this.handleClickOperator.bind(this);
+                this.handleClickClear=this.handleClickClear.bind(this);
+            }
+
+            handleClickNumber(e) {
+                const string=e.target.textContent;
+
+                if (/=/.test(this.state.totalView)) 
+                this.setState(state=>({
+                        currentView:string,
+                        totalView:string
+                    })
+                    ) 
+                else if (this.state.totalView==="error")
+                this.setState(state=>({
+                        currentView:string,
+                        totalView:string
+                    })
+                    ) 
+                else if (/(^0(?!\.))|[+\-*\/]/g.test(this.state.currentView))  
+                this.setState(state=>({
+                        currentView:string,
+                        totalView:state.totalView+string
+                    })
+                    ) 
+                
+                else this.setState(state=>({
+                        currentView:state.currentView+string,
+                        totalView:state.totalView+string
+                    })
+                    )
+                
+            } 
+
+            handleClickNumberZero(e) {
+                const string=e.target.textContent;
+                if (/=/.test(this.state.totalView)) 
+                this.setState(state=>({
+                        currentView:string,
+                        totalView:''
+                    })
+                    )
+
+                else if (this.state.currentView===string) {
+                    return
+                }
+
+                else if (this.state.totalView==="error")
+                    this.setState(state=>({
+                        currentView:string,
+                        totalView:string
+                    })
+                    )
+                else if (/[+\-*\/]/g.test(this.state.currentView))  
+                    this.setState(state=>({
+                        currentView:string,
+                        totalView:state.totalView+string
+                        })
+                    ) 
+                else this.setState(state=>({
+                    currentView:state.currentView+string,
+                    totalView:state.totalView+string
+                    })
+                ) 
+            }
+
+            handleClickEqual(e) {
+                const string=e.target.textContent;
+                let result
+                try {
+                result=new Function("return "+this.state.totalView) ();
+            } catch (error) {
+                result="error";
+            }
+            if (/=/g.test(this.state.totalView))
+                return
+            
+            else if (result==="error")  
+                this.setState(state=>({
+                    currentView:result,
+                    totalView:result
+                    })
+                ); 
+            else this.setState(state=>({
+                    currentView:result,
+                    totalView:state.totalView+string+result
+                    })
+                )
+            }
+
+            handleClickOperator(e) {
+                const string=e.target.textContent;
+                if (this.state.totalView[this.state.totalView.length-1]===string)
+                return 
+                else if (/=/.test(this.state.totalView))
+                this.setState(state=>({
+                    currentView:string,
+                    totalView:state.totalView.slice(state.totalView.indexOf("=")+1)+string
+                    })
+                ) 
+                else if (this.state.totalView==="error") 
+                this.setState(state=>({
+                    currentView:string,
+                    totalView:string,
+                })
+                )
+                else this.setState(state=>({
+                    currentView:string,
+                    totalView:state.totalView+string
+                    })
+                    )
+            }
+            handleClickDecimal (e) {
+                const string=e.target.textContent;
+                if (this.state.currentView[this.state.currentView.length-1]===string) 
+                return
+                
+                else if (/\./g.test(this.state.totalView) && !/=/.test(this.state.totalView) && !/[+\-*\/]/g.test(this.state.totalView))
+                return
+                
+                else if (!this.state.totalView) 
+                this.setState(state=>({
+                    currentView:this.state.currentView+string,
+                    totalView:"0"+string,
+                })
+                )
+                else if (/[+\-*\/]/g.test(this.state.totalView[this.state.totalView.length-1])) 
+                this.setState(state=>({
+                    currentView:"0"+string,
+                    totalView:this.state.totalView+"0"+string,
+                })
+                )
+                else if (/=/.test(this.state.totalView))
+                this.setState(state=>({
+                    currentView:"0"+string,
+                    totalView:"0"+string,
+                })
+                ) 
+                else this.setState(state=>({
+                currentView:this.state.currentView+string,
+                totalView:this.state.totalView+string,
+                })
+            ) 
+            }
+
+            handleClickClear(e) {
+                this.setState(state=>({
+                    currentView:"0",
+                    totalView:''
+                })
+                )
+            }
+
+            render() {
+                return (
+                <div className="calculator">
+                    <Display totalView={this.state.totalView} currentView={this.state.currentView}/> 
+                    {createCalculatorButton("CLEAR","clear",this.handleClickClear)}
+                    {createCalculatorButton("/","divide",this.handleClickOperator)}
+                    {createCalculatorButton("*","multiply",this.handleClickOperator)}
+                    {createCalculatorButton("7","seven",this.handleClickNumber)}
+                    {createCalculatorButton("8","eight",this.handleClickNumber)}
+                    {createCalculatorButton("9","nine",this.handleClickNumber)}
+                    {createCalculatorButton("-","subtract",this.handleClickOperator)}
+                    {createCalculatorButton("4","four",this.handleClickNumber)}
+                    {createCalculatorButton("5","five",this.handleClickNumber)}
+                    {createCalculatorButton("6","six",this.handleClickNumber)}
+                    {createCalculatorButton("+","add",this.handleClickOperator)}
+                    {createCalculatorButton("1","one",this.handleClickNumber)}
+                    {createCalculatorButton("2","two",this.handleClickNumber)}
+                    {createCalculatorButton("3","three",this.handleClickNumber)}
+                    {createCalculatorButton("=","equal",this.handleClickEqual)}
+                    {createCalculatorButton("0","zero",this.handleClickNumberZero)}
+                    {createCalculatorButton(".","decimal",this.handleClickDecimal)}
+                </div>
+                )
+            }
+            }
+
+
+
+        ReactDOM.render(<CalculatorApp/>,document.getElementById("ms"))
+        </script>
+    </body>
+</html>
